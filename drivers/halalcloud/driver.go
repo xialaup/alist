@@ -4,6 +4,12 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"io"
+	"net/url"
+	"path"
+	"strconv"
+	"time"
+
 	"github.com/alist-org/alist/v3/drivers/base"
 	"github.com/alist-org/alist/v3/internal/driver"
 	"github.com/alist-org/alist/v3/internal/model"
@@ -15,15 +21,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/city404/v6-public-rpc-proto/go/v6/common"
+	pubUserOffline "github.com/city404/v6-public-rpc-proto/go/v6/offline"
 	pbPublicUser "github.com/city404/v6-public-rpc-proto/go/v6/user"
 	pubUserFile "github.com/city404/v6-public-rpc-proto/go/v6/userfile"
 	"github.com/rclone/rclone/lib/readers"
 	"github.com/zzzhr1990/go-common-entity/userfile"
-	"io"
-	"net/url"
-	"path"
-	"strconv"
-	"time"
 )
 
 type HalalCloud struct {
@@ -363,6 +365,17 @@ func (d *HalalCloud) remove(ctx context.Context, obj model.Obj) error {
 		},
 	})
 	return err
+}
+
+func (d *HalalCloud) Offline(ctx context.Context, args model.OtherArgs) (interface{}, error) {
+	_, err := pubUserOffline.NewPubOfflineTaskClient(d.HalalCommon.serv.GetGrpcConnection()).Add(ctx, &pubUserOffline.UserTask{
+		Url:      fmt.Sprintf("%s", args.Data),
+		SavePath: args.Obj.GetPath(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return "ok", nil
 }
 
 func (d *HalalCloud) put(ctx context.Context, dstDir model.Obj, fileStream model.FileStreamer, up driver.UpdateProgress) (model.Obj, error) {
