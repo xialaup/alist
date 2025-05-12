@@ -24,6 +24,8 @@ import (
 	pubUserOffline "github.com/city404/v6-public-rpc-proto/go/v6/offline"
 	pbPublicUser "github.com/city404/v6-public-rpc-proto/go/v6/user"
 	pubUserFile "github.com/city404/v6-public-rpc-proto/go/v6/userfile"
+	pbDavConfig "github.com/city404/v6-public-rpc-proto/go/v6/webdavconfig"
+	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/readers"
 	"github.com/zzzhr1990/go-common-entity/userfile"
 )
@@ -94,12 +96,34 @@ func (d *HalalCloud) Init(ctx context.Context) error {
 		}
 		d.HalalCommon.AuthService = as
 		d.SetTokenResp(as.tr)
+		result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
+		if err != nil {
+			fmt.Println(fmt.Errorf("无法获取Webdav信息: %w", err))
+		}
+		if len(result.Username) > 0 {
+			d.SetWebDavUserName(result.Username)
+			d.SetWebDavPassWord(result.Password)
+		} else {
+			fmt.Println(fmt.Errorf("无法获取Webdav用户信息"))
+		}
 		op.MustSaveDriverStorage(d)
 	}
 	var err error
 	d.HalalCommon.serv, err = d.NewAuthService(d.Addition.RefreshToken)
+
 	if err != nil {
 		return err
+	}
+
+	result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
+	if err != nil {
+		fmt.Println(fmt.Errorf("无法获取Webdav信息: %w", err))
+	}
+	if len(result.Username) > 0 {
+		d.SetWebDavUserName(result.Username)
+		d.SetWebDavPassWord(result.Password)
+	} else {
+		fmt.Println(fmt.Errorf("无法获取Webdav用户信息"))
 	}
 
 	return nil
@@ -174,6 +198,14 @@ type HalalCommon struct {
 
 func (d *HalalCloud) SetTokenResp(tr *TokenResp) {
 	d.Addition.RefreshToken = tr.RefreshToken
+}
+
+func (d *HalalCloud) SetWebDavUserName(username string) {
+	d.Addition.WebDavUserName = username
+}
+
+func (d *HalalCloud) SetWebDavPassWord(password string) {
+	d.Addition.WebDavPassWord = password
 }
 
 func (d *HalalCloud) getFiles(ctx context.Context, dir model.Obj) ([]model.Obj, error) {
@@ -376,6 +408,40 @@ func (d *HalalCloud) Offline(ctx context.Context, args model.OtherArgs) (interfa
 		return nil, err
 	}
 	return "ok", nil
+}
+
+func (d *HalalCloud) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
+
+	if args.Obj.IsDir() {
+		return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
+	}
+
+	if len(d.WebDavUserName) <= 0 {
+		return "无法获取WebDav用户信息", errors.New("无法获取WebDav用户信息")
+	}
+
+	// result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
+	// if err != nil {
+	// 	return "无法获取Webdav信息", err
+	// }
+
+	// 构造基础URL
+	baseURL := "https://dav.2dland.cn"
+	// 解析基础URL
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return "无法解析下载网址", err
+	}
+
+	// 设置用户名和密码
+	username := d.WebDavUserName
+	password := d.WebDavPassWord
+
+	// 设置用户名和密码
+	parsedURL.User = url.UserPassword(username, password)
+	linkurl := parsedURL.String() + args.Obj.GetPath()
+
+	return linkurl, nil
 }
 
 func (d *HalalCloud) put(ctx context.Context, dstDir model.Obj, fileStream model.FileStreamer, up driver.UpdateProgress) (model.Obj, error) {
