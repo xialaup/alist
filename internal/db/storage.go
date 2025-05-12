@@ -63,7 +63,7 @@ func GetStorageByMountPath(mountPath string) (*model.Storage, error) {
 
 func GetEnabledStorages() ([]model.Storage, error) {
 	var storages []model.Storage
-	if err := db.Where(fmt.Sprintf("%s = ?", columnName("disabled")), false).Find(&storages).Error; err != nil {
+	if err := db.Where(fmt.Sprintf("%s = ?", columnName("disabled")), false).Order(columnName("order")).Find(&storages).Error; err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return storages, nil
