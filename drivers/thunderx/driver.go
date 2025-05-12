@@ -2,6 +2,7 @@ package thunderx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -388,6 +389,49 @@ func (xc *XunLeiXCommon) Offline(ctx context.Context, args model.OtherArgs) (int
 		return nil, err
 	}
 	return "ok", nil
+}
+
+func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
+
+	if args.Obj.IsDir() {
+		return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
+	}
+
+	var lFile Files
+	_, err := xc.Request(FILE_API_URL+"/{fileID}", http.MethodGet, func(r *resty.Request) {
+		r.SetContext(ctx)
+		r.SetPathParam("fileID", args.Obj.GetID())
+		//r.SetQueryParam("space", "")
+	}, &lFile)
+	if err != nil {
+		return nil, err
+	}
+
+	link := &model.Link{
+		URL: lFile.WebContentLink,
+		Header: http.Header{
+			"User-Agent": {xc.DownloadUserAgent},
+		},
+	}
+
+	if xc.UseVideoUrl {
+		for _, media := range lFile.Medias {
+			if media.Link.URL != "" {
+				link.URL = media.Link.URL
+				break
+			}
+		}
+	}
+
+	// if xc.UseUrlProxy {
+	// 	if strings.HasSuffix(xc.ProxyUrl, "/") {
+	// 		link.URL = xc.ProxyUrl + link.URL
+	// 	} else {
+	// 		link.URL = xc.ProxyUrl + "/" + link.URL
+	// 	}
+	// }
+
+	return link.URL, nil
 }
 
 func (xc *XunLeiXCommon) Copy(ctx context.Context, srcObj, dstDir model.Obj) error {
