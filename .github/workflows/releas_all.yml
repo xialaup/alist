@@ -1,4 +1,4 @@
-name: trigger all release
+name: 0 trigger all release
 
 on:
   repository_dispatch:
