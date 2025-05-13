@@ -20,18 +20,23 @@ type Addition struct {
 	AppSecret  string `json:"app_secret" required:"true" default:"bR4SJwOkvnG5WvVJ"`
 }
 
+var DefaultProxy = true
+var DeafultWebDavPolicy = "native_proxy"
+
 var config = driver.Config{
-	Name:              "HalalCloud",
-	LocalSort:         false,
-	OnlyLocal:         false,
-	OnlyProxy:         false,
-	NoCache:           false,
-	NoUpload:          false,
-	NeedMs:            false,
-	DefaultRoot:       "/",
-	CheckStatus:       false,
-	Alert:             "",
-	NoOverwriteUpload: false,
+	Name:                "HalalCloud",
+	LocalSort:           false,
+	OnlyLocal:           false,
+	OnlyProxy:           false,
+	NoCache:             false,
+	NoUpload:            false,
+	NeedMs:              false,
+	DefaultRoot:         "/",
+	CheckStatus:         false,
+	Alert:               "",
+	NoOverwriteUpload:   false,
+	DeafultProxy:        &DefaultProxy,
+	DeafultWebDavPolicy: &DeafultWebDavPolicy,
 }
 
 func init() {

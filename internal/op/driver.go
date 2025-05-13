@@ -2,6 +2,7 @@ package op
 
 import (
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/alist-org/alist/v3/internal/conf"
@@ -90,14 +91,27 @@ func getMainItems(config driver.Config) []driver.Item {
 		})
 	}
 	if !config.OnlyProxy && !config.OnlyLocal {
+
+		DefaultProxy := false
+		DeafultWebDavPolicy := "302_redirect"
+
+		if config.DeafultProxy != nil {
+			DefaultProxy = *config.DeafultProxy
+		}
+
+		if config.DeafultWebDavPolicy != nil {
+			DeafultWebDavPolicy = *config.DeafultWebDavPolicy
+		}
+
 		items = append(items, []driver.Item{{
-			Name: "web_proxy",
-			Type: conf.TypeBool,
+			Name:    "web_proxy",
+			Type:    conf.TypeBool,
+			Default: strconv.FormatBool(DefaultProxy),
 		}, {
 			Name:     "webdav_policy",
 			Type:     conf.TypeSelect,
 			Options:  "302_redirect,use_proxy_url,native_proxy",
-			Default:  "302_redirect",
+			Default:  DeafultWebDavPolicy,
 			Required: true,
 		},
 		}...)
