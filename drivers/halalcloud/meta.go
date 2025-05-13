@@ -11,6 +11,7 @@ type Addition struct {
 	// define other
 	RefreshToken   string `json:"refresh_token" required:"true" help:"login type is refresh_token,this is required"`
 	UploadThread   string `json:"upload_thread" default:"3" help:"1 <= thread <= 32"`
+	UseDavMode     bool   `json:"use_webdav" default:"false" help:""`
 	WebDavUserName string `json:"webdav_username" default:"" help:"auto fetch"`
 	WebDavPassWord string `json:"webdav_password" default:"" help:"auto fetch"`
 
@@ -22,8 +23,8 @@ type Addition struct {
 var config = driver.Config{
 	Name:              "HalalCloud",
 	LocalSort:         false,
-	OnlyLocal:         true,
-	OnlyProxy:         true,
+	OnlyLocal:         false,
+	OnlyProxy:         false,
 	NoCache:           false,
 	NoUpload:          false,
 	NeedMs:            false,

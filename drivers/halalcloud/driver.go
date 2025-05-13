@@ -244,6 +244,29 @@ func (d *HalalCloud) getFiles(ctx context.Context, dir model.Obj) ([]model.Obj, 
 
 func (d *HalalCloud) getLink(ctx context.Context, file model.Obj, args model.LinkArgs) (*model.Link, error) {
 
+	if d.UseDavMode {
+		// 构造基础URL
+		baseURL := "https://dav.2dland.cn"
+		// 解析基础URL
+		parsedURL, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, err
+		}
+
+		// 设置用户名和密码
+		username := d.WebDavUserName
+		password := d.WebDavPassWord
+
+		// 设置用户名和密码
+		parsedURL.User = url.UserPassword(username, password)
+		linkurl := parsedURL.String() + file.GetPath()
+
+		link := &model.Link{
+			URL: linkurl,
+		}
+		return link, nil
+	}
+
 	client := pubUserFile.NewPubUserFileClient(d.HalalCommon.serv.GetGrpcConnection())
 	ctx1, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
