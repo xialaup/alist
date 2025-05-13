@@ -92,26 +92,15 @@ func getMainItems(config driver.Config) []driver.Item {
 	}
 	if !config.OnlyProxy && !config.OnlyLocal {
 
-		DefaultProxy := false
-		DeafultWebDavPolicy := "302_redirect"
-
-		if config.DeafultProxy != nil {
-			DefaultProxy = *config.DeafultProxy
-		}
-
-		if config.DeafultWebDavPolicy != nil {
-			DeafultWebDavPolicy = *config.DeafultWebDavPolicy
-		}
-
 		items = append(items, []driver.Item{{
 			Name:    "web_proxy",
 			Type:    conf.TypeBool,
-			Default: strconv.FormatBool(DefaultProxy),
+			Default: strconv.FormatBool(config.DeafultProxy),
 		}, {
 			Name:     "webdav_policy",
 			Type:     conf.TypeSelect,
 			Options:  "302_redirect,use_proxy_url,native_proxy",
-			Default:  DeafultWebDavPolicy,
+			Default:  config.DeafultWebDavPolicy,
 			Required: true,
 		},
 		}...)
