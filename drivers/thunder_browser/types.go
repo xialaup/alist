@@ -221,3 +221,120 @@ type UploadTaskResponse struct {
 
 	File Files `json:"file"`
 }
+
+// Meta 结构体代表文件的 meta 数据
+type ResourceMeta struct {
+	Icon         string `json:"icon"`
+	Status       string `json:"status,omitempty"`
+	Hash         string `json:"hash,omitempty"`
+	MimeType     string `json:"mime_type,omitempty"`
+	URLTag       string `json:"url_tag,omitempty"`
+	URL          string `json:"url,omitempty"`
+	BTCreateTime string `json:"bt_create_time,omitempty"`
+}
+
+// Dir 结构体表示一个目录
+type ResourceDir struct {
+	NextPageToken string         `json:"next_page_token"`
+	Resources     []ResourceFile `json:"resources"`
+	PageSize      int            `json:"page_size"`
+}
+
+// ResourceFile 结构体表示一个文件或目录（资源项）
+type ResourceFile struct {
+	IsDir     bool         `json:"is_dir"`
+	Dir       *ResourceDir `json:"dir,omitempty"` // 如果是目录，Dir 可能存在
+	ID        string       `json:"id"`
+	Resolver  string       `json:"resolver"`
+	FileSize  string       `json:"file_size"`
+	Meta      ResourceMeta `json:"meta"`
+	ParentID  string       `json:"parent_id"`
+	FileIndex int          `json:"file_index"`
+	Name      string       `json:"name"`
+	FileCount int          `json:"file_count"`
+}
+
+// ResourceList 结构体表示 list 字段（包含 next_page_token 和 resources）
+type ResourceList struct {
+	NextPageToken string         `json:"next_page_token"`
+	Resources     []ResourceFile `json:"resources"`
+	PageSize      int            `json:"page_size"`
+}
+
+// ResourceResponse 结构体表示顶级 JSON 数据结构
+type ResourceResponse struct {
+	ListID string       `json:"list_id"`
+	List   ResourceList `json:"list"`
+}
+
+// ResourceResponse 结构体表示顶级 JSON 数据结构
+type FileSearchResponse struct {
+	ResourceExited bool    `json:"resource_existed"`
+	Files          []Files `json:"files"`
+	NextPageToken  string  `json:"next_page_token"`
+	Unrecognized   bool    `json:"unrecognized"`
+}
+
+type Task struct {
+	Params struct {
+		FolderType   string `json:"folder_type"`
+		PredictSpeed string `json:"predict_speed"`
+		PredictType  string `json:"predict_type"`
+	} `json:"params"`
+	Statuses          []interface{} `json:"statuses"`
+	UserID            string        `json:"user_id"`
+	FileName          string        `json:"file_name"`
+	FileID            string        `json:"file_id"`
+	Kind              string        `json:"kind"`
+	StatusSize        int           `json:"status_size"`
+	ThirdTaskID       string        `json:"third_task_id"`
+	Name              string        `json:"name"`
+	Type              string        `json:"type"`
+	Phase             string        `json:"phase"`
+	Callback          string        `json:"callback"`
+	ID                string        `json:"id"`
+	Progress          int           `json:"progress"`
+	IconLink          string        `json:"icon_link"`
+	Message           string        `json:"message"`
+	CreatedTime       time.Time     `json:"created_time"`
+	ReferenceResource interface{}   `json:"reference_resource"`
+	Space             string        `json:"space"`
+	UpdatedTime       time.Time     `json:"updated_time"`
+	FileSize          string        `json:"file_size"`
+}
+
+type URL struct {
+	Kind string `json:"kind"`
+}
+
+type TaskResponse struct {
+	Task       Task   `json:"task"`
+	UploadType string `json:"upload_type"`
+	URL        URL    `json:"url"`
+	File       Files  `json:"file"`
+}
+
+// 定义 添加流畅播添加任务请求
+type PlayURL struct {
+	Files []string `json:"files"`
+	URL   string   `json:"url"`
+}
+
+type PlayParams struct {
+	Referer    string `json:"referer"`
+	Played     string `json:"played"`
+	DedupIndex string `json:"dedup_index"`
+	Scene      string `json:"scene"`
+	WebTitle   string `json:"web_title"`
+}
+
+type PlayRequest struct {
+	Params     PlayParams `json:"params"`
+	UploadType string     `json:"upload_type"`
+	FolderType string     `json:"folder_type"`
+	Space      string     `json:"space"`
+	NeedDedup  bool       `json:"need_dedup"`
+	Kind       string     `json:"kind"`
+	Name       string     `json:"name"`
+	URL        PlayURL    `json:"url"`
+}

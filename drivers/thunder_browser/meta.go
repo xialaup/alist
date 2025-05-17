@@ -89,8 +89,8 @@ func (i *Addition) GetIdentity() string {
 
 var config = driver.Config{
 	Name:      "ThunderBrowser",
-	LocalSort: true,
-	OnlyProxy: true,
+	LocalSort: false,
+	OnlyProxy: false,
 }
 
 var configExpert = driver.Config{

@@ -174,6 +174,7 @@ func (c *Common) Request(url, method string, callback base.ReqCallback, resp int
 	if resp != nil {
 		req.SetResult(resp)
 	}
+
 	res, err := req.Execute(method, url)
 	if err != nil {
 		return nil, err

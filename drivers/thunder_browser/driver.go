@@ -2,6 +2,7 @@ package thunder_browser
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -459,6 +460,100 @@ func (xc *XunLeiBrowserCommon) Offline(ctx context.Context, args model.OtherArgs
 		return nil, err
 	}
 	return "ok", nil
+}
+
+func (xc *XunLeiBrowserCommon) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
+	if dataMap, ok := args.Data.(map[string]interface{}); ok {
+		action, ok := dataMap["action"].(string)
+		if !ok {
+			return nil, fmt.Errorf("action field is missing or not a string")
+		}
+		switch action {
+		case "sourcelist":
+			var lFile ResourceResponse
+			_, err := xc.Request(API_URL+"/resource/list", http.MethodPost, func(r *resty.Request) {
+				r.SetContext(ctx)
+				r.SetBody(&base.Json{"page_size": 500, "urls": dataMap["urls"]})
+			}, &lFile)
+			if err != nil {
+				return nil, err
+			}
+			return lFile, nil
+		case "search":
+			var lFile FileSearchResponse
+			_, err := xc.Request(FILE_API_URL+":search", http.MethodPost, func(r *resty.Request) {
+				r.SetContext(ctx)
+				r.SetBody(&base.Json{"parent_id": "*", "sapce": "", "url": dataMap["urls"], "file_index": dataMap["file_index"]})
+			}, &lFile)
+			if err != nil {
+				return nil, err
+			}
+			return lFile, nil
+
+		case "addtask":
+			url, ok := dataMap["urls"].(string)
+			if !ok {
+				return nil, fmt.Errorf("urls不符合格式")
+			}
+			name, nok := dataMap["name"].(string)
+			if !nok {
+				return nil, fmt.Errorf("name不符合格式")
+			}
+
+			filesInterface, ok := dataMap["files"].([]interface{})
+			if !ok {
+				return nil, fmt.Errorf("files 字段的类型不是 []interface{}")
+			}
+
+			var files []string
+			for _, v := range filesInterface {
+				// 对每个元素进行断言，确保它是 string 类型
+				if str, ok := v.(string); ok {
+					files = append(files, str)
+				} else {
+					return nil, fmt.Errorf("files 中的元素不是 string 类型")
+				}
+			}
+			request := PlayRequest{
+				Params: PlayParams{
+					Referer:    "https://www.baidu.com",
+					Played:     "0",
+					DedupIndex: "0",
+					Scene:      "smart_spot_panel",
+					WebTitle:   name,
+				},
+				UploadType: "UPLOAD_TYPE_URL",
+				FolderType: "FAVORITE",
+				Space:      "SPACE_FAVORITE",
+				NeedDedup:  true,
+				Kind:       "drive#file",
+				Name:       name,
+				URL: PlayURL{
+					Files: files,
+					URL:   url,
+				},
+			}
+
+			jsonData, jerr := json.Marshal(request)
+			if jerr != nil {
+				return nil, jerr
+			}
+
+			var lFile TaskResponse
+			_, err := xc.Request(FILE_API_URL, http.MethodPost, func(r *resty.Request) {
+				r.SetContext(ctx)
+				r.SetBody(jsonData)
+			}, &lFile)
+			if err != nil {
+				return nil, err
+			}
+			return lFile, nil
+		default:
+			return nil, fmt.Errorf("unknown action: %s", action)
+		}
+	}
+
+	return args.Data, nil
 }
 
 func (xc *XunLeiBrowserCommon) Copy(ctx context.Context, srcObj, dstDir model.Obj) error {
