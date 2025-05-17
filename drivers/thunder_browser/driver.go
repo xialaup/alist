@@ -553,7 +553,47 @@ func (xc *XunLeiBrowserCommon) Other(ctx context.Context, args model.OtherArgs) 
 		}
 	}
 
-	return args.Data, nil
+	var lFile Files
+	params := map[string]string{
+		"_magic":         "2021",
+		"space":          "SPACE_BROWSER",
+		"thumbnail_size": "SIZE_LARGE",
+		"with":           "url",
+	}
+	// 对 "迅雷云盘" 内的文件 特殊处理
+	if args.Obj.GetPath() == ThunderDriveFileID {
+		params = map[string]string{}
+	} else if args.Obj.GetPath() == ThunderBrowserDriveSafeFileID {
+		// 对 "超级保险箱" 内的文件 特殊处理
+		params["space"] = "SPACE_BROWSER_SAFE"
+	}
+
+	_, err := xc.Request(FILE_API_URL+"/{fileID}", http.MethodGet, func(r *resty.Request) {
+		r.SetContext(ctx)
+		r.SetPathParam("fileID", args.Obj.GetID())
+		r.SetQueryParams(params)
+		//r.SetQueryParam("space", "")
+	}, &lFile)
+	if err != nil {
+		return nil, err
+	}
+	link := &model.Link{
+		URL: lFile.WebContentLink,
+		Header: http.Header{
+			"User-Agent": {xc.DownloadUserAgent},
+		},
+	}
+
+	if xc.UseVideoUrl {
+		for _, media := range lFile.Medias {
+			if media.Link.URL != "" {
+				link.URL = media.Link.URL
+				break
+			}
+		}
+	}
+	return link.URL, nil
+
 }
 
 func (xc *XunLeiBrowserCommon) Copy(ctx context.Context, srcObj, dstDir model.Obj) error {
