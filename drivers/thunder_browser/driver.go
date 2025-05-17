@@ -81,6 +81,7 @@ func (x *ThunderBrowser) Init(ctx context.Context) (err error) {
 				UserAgent:         "ANDROID-com.xunlei.browser/1.0.7.1938 netWorkType/5G appid/22062 deviceName/Xiaomi_M2004j7ac deviceModel/M2004J7AC OSVersion/12 protocolVersion/301 platformVersion/10 sdkVersion/233100 Oauth2Client/0.9 (Linux 4_14_186-perf-gddfs8vbb238b) (JAVA 0)",
 				DownloadUserAgent: "AndroidDownloadManager/12 (Linux; U; Android 12; M2004J7AC Build/SP1A.210812.016)",
 				UseVideoUrl:       x.UseVideoUrl,
+				RemoveWay:         x.RemoveWay,
 
 				refreshCTokenCk: func(token string) {
 					x.CaptchaToken = token
@@ -186,6 +187,7 @@ func (x *ThunderBrowserExpert) Init(ctx context.Context) (err error) {
 				UserAgent:         x.UserAgent,
 				DownloadUserAgent: x.DownloadUserAgent,
 				UseVideoUrl:       x.UseVideoUrl,
+				RemoveWay:         x.RemoveWay,
 
 				refreshCTokenCk: func(token string) {
 					x.CaptchaToken = token
@@ -271,6 +273,7 @@ func (x *ThunderBrowserExpert) Init(ctx context.Context) (err error) {
 		x.XunLeiBrowserCommon.UserAgent = x.UserAgent
 		x.XunLeiBrowserCommon.DownloadUserAgent = x.DownloadUserAgent
 		x.XunLeiBrowserCommon.UseVideoUrl = x.UseVideoUrl
+		x.XunLeiBrowserCommon.RemoveWay = x.RemoveWay
 		x.ExpertAddition.RootFolderID = x.RootFolderID
 	}
 
@@ -654,10 +657,9 @@ func (xc *XunLeiBrowserCommon) Remove(ctx context.Context, obj model.Obj) error 
 	}
 
 	if xc.RemoveWay == "delete" && obj.GetPath() == ThunderDriveFileID {
-		_, err := xc.Request(FILE_API_URL+"/{fileID}/trash", http.MethodPatch, func(r *resty.Request) {
+		_, err := xc.Request(FILE_API_URL+":batchDelete", http.MethodPost, func(r *resty.Request) {
 			r.SetContext(ctx)
-			r.SetPathParam("fileID", obj.GetID())
-			r.SetBody("{}")
+			r.SetBody(&js)
 		}, nil)
 		return err
 	} else if obj.GetPath() == ThunderBrowserDriveSafeFileID {
