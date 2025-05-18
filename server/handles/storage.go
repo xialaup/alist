@@ -90,6 +90,20 @@ func DeleteStorage(c *gin.Context) {
 	common.SuccessResp(c)
 }
 
+func ForceDeleteStorage(c *gin.Context) {
+	idStr := c.Query("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		common.ErrorResp(c, err, 400)
+		return
+	}
+	if err := op.ForceDeleteStorageById(c, uint(id)); err != nil {
+		common.ErrorResp(c, err, 500, true)
+		return
+	}
+	common.SuccessResp(c)
+}
+
 func DisableStorage(c *gin.Context) {
 	idStr := c.Query("id")
 	id, err := strconv.Atoi(idStr)

@@ -133,6 +133,7 @@ func admin(g *gin.RouterGroup) {
 	storage.POST("/copy", handles.CopyStorage)
 	storage.POST("/update", handles.UpdateStorage)
 	storage.POST("/delete", handles.DeleteStorage)
+	storage.POST("/forcedelete", handles.ForceDeleteStorage)
 	storage.POST("/enable", handles.EnableStorage)
 	storage.POST("/disable", handles.DisableStorage)
 	storage.POST("/load_all", handles.LoadAllStorages)
