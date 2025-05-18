@@ -99,6 +99,7 @@ func (d *HalalCloud) Init(ctx context.Context) error {
 		result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
 		if err != nil {
 			fmt.Println(fmt.Errorf("无法获取Webdav信息: %w", err))
+			return err
 		}
 		if len(result.Username) > 0 {
 			d.SetWebDavUserName(result.Username)
@@ -118,6 +119,7 @@ func (d *HalalCloud) Init(ctx context.Context) error {
 	result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
 	if err != nil {
 		fmt.Println(fmt.Errorf("无法获取Webdav信息: %w", err))
+		return err
 	}
 	if len(result.Username) > 0 {
 		d.SetWebDavUserName(result.Username)
