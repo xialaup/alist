@@ -19,6 +19,7 @@ import (
 	_ "github.com/alist-org/alist/v3/drivers/baidu_photo"
 	_ "github.com/alist-org/alist/v3/drivers/baidu_share"
 	_ "github.com/alist-org/alist/v3/drivers/chaoxing"
+	_ "github.com/alist-org/alist/v3/drivers/chunker"
 	_ "github.com/alist-org/alist/v3/drivers/cloudreve"
 	_ "github.com/alist-org/alist/v3/drivers/crypt"
 	_ "github.com/alist-org/alist/v3/drivers/doubao"
