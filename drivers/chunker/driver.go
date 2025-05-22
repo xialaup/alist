@@ -18,6 +18,7 @@ import (
 	"github.com/alist-org/alist/v3/internal/stream"
 	"github.com/alist-org/alist/v3/pkg/http_range"
 	"github.com/alist-org/alist/v3/pkg/utils"
+	"github.com/alist-org/alist/v3/server/common"
 	"github.com/rclone/rclone/lib/readers"
 )
 
@@ -192,6 +193,7 @@ func (d *Chunker) Link(ctx context.Context, file model.Obj, args model.LinkArgs)
 	chunkSize := int64(1024 * 1024 * d.ChunkSize)
 	file_size := file.GetSize()
 	chunkCount := int(math.Ceil(float64(file_size) / float64(chunkSize)))
+	apiUrl := common.GetApiUrl(common.GetHttpReq(ctx))
 
 	if chunkCount > 1 {
 		parentPath, _ := stdpath.Split(file.GetPath())
@@ -235,6 +237,7 @@ func (d *Chunker) Link(ctx context.Context, file model.Obj, args model.LinkArgs)
 			oo := &openObject{
 				ctx:        ctx,
 				d:          result,
+				apiUrl:     apiUrl,
 				parentPath: parentPath,
 				storage:    d,
 				chunk:      &[]byte{},

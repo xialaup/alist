@@ -88,6 +88,7 @@ func (d *Chunker) getActualPathForRemote(path string, isFolder bool) (string, er
 type openObject struct {
 	ctx        context.Context
 	mu         sync.Mutex
+	apiUrl     string
 	parentPath string
 	storage    *Chunker
 	d          []model.Obj
@@ -124,7 +125,7 @@ func (oo *openObject) getRawFiles(ctx context.Context, addr string) ([]byte, err
 			sign.Sign(addr))
 	} else {
 		rawURL = fmt.Sprintf("%s/p%s%s",
-			"http://localhost:5244",
+			oo.apiUrl,
 			utils.EncodePath(addr, true),
 			query)
 	}
