@@ -111,20 +111,33 @@ func (oo *openObject) getRawFiles(ctx context.Context, addr string) ([]byte, err
 
 	var rawURL string
 
-	storage := oo.storage
+	storage := oo.storage.remoteStorage
 
 	query := ""
 	meta, _ := op.GetNearestMeta(addr)
 	if isEncrypt(meta, addr) || setting.GetBool(conf.SignAll) {
 		query = "?sign=" + sign.Sign(addr)
 	}
-	if storage.GetStorage().DownProxyUrl != "" {
-		rawURL = fmt.Sprintf("%s%s?sign=%s",
-			strings.Split(storage.GetStorage().DownProxyUrl, "\n")[0],
-			utils.EncodePath(addr, true),
-			sign.Sign(addr))
+
+	if storage.Config().MustProxy() || storage.GetStorage().WebProxy {
+		query := ""
+		if isEncrypt(meta, addr) || setting.GetBool(conf.SignAll) {
+			query = "?sign=" + sign.Sign(addr)
+		}
+		if storage.GetStorage().DownProxyUrl != "" {
+			rawURL = fmt.Sprintf("%s%s?sign=%s",
+				strings.Split(storage.GetStorage().DownProxyUrl, "\n")[0],
+				utils.EncodePath(addr, true),
+				sign.Sign(addr))
+		} else {
+			rawURL = fmt.Sprintf("%s/p%s%s",
+				oo.apiUrl,
+				utils.EncodePath(addr, true),
+				query)
+		}
 	} else {
-		rawURL = fmt.Sprintf("%s/p%s%s",
+
+		rawURL = fmt.Sprintf("%s/d%s%s",
 			oo.apiUrl,
 			utils.EncodePath(addr, true),
 			query)

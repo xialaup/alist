@@ -207,7 +207,7 @@ func (d *Chunker) Link(ctx context.Context, file model.Obj, args model.LinkArgs)
 			if obj.IsDir() {
 				continue
 			} else {
-				if strings.HasPrefix(obj.GetPath(), file.GetPath()+".rclone_chunk") {
+				if strings.HasPrefix(obj.GetName(), file.GetName()+".rclone_chunk") {
 					objRes := model.Object{
 						Name:     obj.GetName(),
 						Size:     obj.GetSize(),
@@ -221,7 +221,7 @@ func (d *Chunker) Link(ctx context.Context, file model.Obj, args model.LinkArgs)
 				}
 			}
 		}
-		result = append(result, file)
+		//result = append(result, file)
 		model.SortFiles(result, "name", "asc")
 		chunks := getChunkSizes(result)
 
