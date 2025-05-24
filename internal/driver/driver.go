@@ -112,25 +112,3 @@ type CopyResult interface {
 type PutResult interface {
 	Put(ctx context.Context, dstDir model.Obj, stream model.FileStreamer, up UpdateProgress) (model.Obj, error)
 }
-
-type UpdateProgress func(percentage float64)
-
-type Progress struct {
-	Total int64
-	Done  int64
-	up    UpdateProgress
-}
-
-func (p *Progress) Write(b []byte) (n int, err error) {
-	n = len(b)
-	p.Done += int64(n)
-	p.up(float64(p.Done) / float64(p.Total) * 100)
-	return
-}
-
-func NewProgress(total int64, up UpdateProgress) *Progress {
-	return &Progress{
-		Total: total,
-		up:    up,
-	}
-}
