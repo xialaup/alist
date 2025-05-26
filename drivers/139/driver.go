@@ -512,7 +512,7 @@ func (d *Yun139) getPartSize(size int64) int64 {
 	if size/utils.GB > 30 {
 		return 512 * utils.MB
 	}
-	return 100 * utils.MB
+	return 350 * utils.MB
 }
 
 func (d *Yun139) Put(ctx context.Context, dstDir model.Obj, stream model.FileStreamer, up driver.UpdateProgress) error {
