@@ -370,6 +370,11 @@ func FsOther(c *gin.Context) {
 		return
 	}
 	user := c.MustGet("user").(*model.User)
+
+	if !user.CanOther() {
+		common.ErrorResp(c, errs.PermissionDenied, 403)
+		return
+	}
 	var err error
 	req.Path, err = user.JoinPath(req.Path)
 	if err != nil {

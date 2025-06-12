@@ -42,6 +42,7 @@ type User struct {
 	//   7: can remove
 	//   8: webdav read
 	//   9: webdav write
+	//   10: can use storage other interface
 	Permission int32  `json:"permission"`
 	OtpSecret  string `json:"-"`
 	SsoID      string `json:"sso_id"` // unique by sso platform
@@ -115,6 +116,10 @@ func (u *User) CanWebdavRead() bool {
 
 func (u *User) CanWebdavManage() bool {
 	return u.IsAdmin() || (u.Permission>>9)&1 == 1
+}
+
+func (u *User) CanOther() bool {
+	return u.IsAdmin() || (u.Permission>>10)&1 == 1
 }
 
 func (u *User) JoinPath(reqPath string) (string, error) {
