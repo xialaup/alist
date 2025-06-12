@@ -2,6 +2,7 @@ package thunderx
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-resty/resty/v2"
+	"github.com/tidwall/gjson"
 )
 
 type ThunderX struct {
@@ -393,45 +395,97 @@ func (xc *XunLeiXCommon) Offline(ctx context.Context, args model.OtherArgs) (int
 
 func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
 
-	if args.Obj.IsDir() {
-		return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
-	}
+	if args.Data == nil {
+		if args.Obj.IsDir() {
+			return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
+		}
 
-	var lFile Files
-	_, err := xc.Request(FILE_API_URL+"/{fileID}", http.MethodGet, func(r *resty.Request) {
-		r.SetContext(ctx)
-		r.SetPathParam("fileID", args.Obj.GetID())
-		//r.SetQueryParam("space", "")
-	}, &lFile)
-	if err != nil {
-		return nil, err
-	}
+		var lFile Files
+		_, err := xc.Request(FILE_API_URL+"/{fileID}", http.MethodGet, func(r *resty.Request) {
+			r.SetContext(ctx)
+			r.SetPathParam("fileID", args.Obj.GetID())
+			//r.SetQueryParam("space", "")
+		}, &lFile)
+		if err != nil {
+			return nil, err
+		}
 
-	link := &model.Link{
-		URL: lFile.WebContentLink,
-		Header: http.Header{
-			"User-Agent": {xc.DownloadUserAgent},
-		},
-	}
+		link := &model.Link{
+			URL: lFile.WebContentLink,
+			Header: http.Header{
+				"User-Agent": {xc.DownloadUserAgent},
+			},
+		}
 
-	if xc.UseVideoUrl {
-		for _, media := range lFile.Medias {
-			if media.Link.URL != "" {
-				link.URL = media.Link.URL
-				break
+		if xc.UseVideoUrl {
+			for _, media := range lFile.Medias {
+				if media.Link.URL != "" {
+					link.URL = media.Link.URL
+					break
+				}
 			}
 		}
+		return link.URL, nil
 	}
 
-	// if xc.UseUrlProxy {
-	// 	if strings.HasSuffix(xc.ProxyUrl, "/") {
-	// 		link.URL = xc.ProxyUrl + link.URL
-	// 	} else {
-	// 		link.URL = xc.ProxyUrl + "/" + link.URL
-	// 	}
-	// }
+	dataBytes, err := json.Marshal(args.Data)
+	if err != nil {
+		return nil, fmt.Errorf("解析data数据出错: %w ,注意data为json格式", err)
+	}
+	if string(dataBytes) == "null" || string(dataBytes) == "{}" || string(dataBytes) == "\"\"" {
+		return nil, errors.New("data不能为空")
+	}
 
-	return link.URL, nil
+	jsonStr := string(dataBytes)
+
+	// ✅ Step 1: 判断是否有 action 字段
+	actionResult := gjson.Get(jsonStr, "action")
+	if !actionResult.Exists() {
+		return nil, errors.New("请传递action字段")
+	}
+
+	action := actionResult.String()
+	switch action {
+	case "request":
+		// 构造请求数据，假设传入的 json 里有 url, method, body 字段
+		url := gjson.Get(jsonStr, "url").String()
+		method := strings.ToUpper(gjson.Get(jsonStr, "method").String())
+		body := gjson.Get(jsonStr, "body").Raw
+		if url == "" {
+			return nil, errors.New("url不能为空")
+		}
+		if method == "" {
+			method = "GET" // 默认 GET
+		}
+
+		resp, err := xc.Request(url, method, func(r *resty.Request) {
+			r.SetContext(ctx)
+			r.SetHeaders(map[string]string{
+				"X-Device-Id": xc.DeviceID,
+				"User-Agent":  xc.UserAgent,
+				"Peer-Id":     xc.DeviceID,
+				"client_id":   xc.ClientID,
+				"x-client-id": xc.ClientID,
+				"X-Guid":      xc.DeviceID,
+			})
+			r.SetBody([]byte(body))
+		}, nil)
+
+		if err != nil {
+			return nil, errors.New("请求错误")
+		}
+		var result interface{}
+		err = json.Unmarshal(resp, &result)
+		if err != nil {
+			// 不是 JSON，就直接返回原始字符串
+			return string(resp), nil
+		}
+		// 是合法 JSON，返回解析结果
+		return result, nil
+
+	default:
+		return nil, fmt.Errorf("未知的action类型: %s", action)
+	}
 }
 
 func (xc *XunLeiXCommon) Copy(ctx context.Context, srcObj, dstDir model.Obj) error {
@@ -569,8 +623,12 @@ func (xc *XunLeiXCommon) Request(url string, method string, callback base.ReqCal
 	}, resp)
 
 	errResp, ok := err.(*ErrResp)
+
 	if !ok {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
 	}
 
 	switch errResp.ErrorCode {

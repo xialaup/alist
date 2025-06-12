@@ -371,7 +371,7 @@ func FsOther(c *gin.Context) {
 	}
 	user := c.MustGet("user").(*model.User)
 
-	if !user.CanOther() {
+	if !user.IsAdmin() {
 		common.ErrorResp(c, errs.PermissionDenied, 403)
 		return
 	}

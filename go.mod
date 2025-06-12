@@ -78,6 +78,12 @@ require (
 )
 
 require (
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
+)
+
+require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
 	github.com/RoaringBitmap/roaring v1.2.3 // indirect
@@ -228,3 +234,5 @@ require (
 )
 
 replace github.com/djherbis/times v1.6.0 => github.com/jing332/times v0.0.0-20240518094816-0ce84dcd6b94
+
+replace github.com/chenzhuoyu/iasm v0.9.0 => github.com/cloudwego/iasm v0.0.9
