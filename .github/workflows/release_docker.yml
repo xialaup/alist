@@ -28,22 +28,16 @@ jobs:
     name: Build Binaries for Docker Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-
-      - name: Cache Musl
-        id: cache-musl
-        uses: actions/cache@v4
+      
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          path: build/musl-libs
-          key: docker-musl-libs-v2
+          fetch-depth: 0
 
       - name: Download Musl Library
-        if: steps.cache-musl.outputs.cache-hit != 'true'
         run: bash build.sh prepare docker-multiplatform
 
       - name: Build go binary (beta)
