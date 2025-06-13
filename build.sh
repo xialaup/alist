@@ -99,7 +99,7 @@ PrepareBuildDockerMusl() {
     url="${BASE}${i}.tgz"
     echo $url
     lib_tgz="build/${i}.tgz"
-    curl -L -o "${lib_tgz}" "${url}"
+    curl -v -L -o "${lib_tgz}" "${url}"
     tar xf "${lib_tgz}" --strip-components 1 -C build/musl-libs
     rm -f "${lib_tgz}"
   done
