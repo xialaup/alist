@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	neturl "net/url"
 	"strings"
 
 	"github.com/alist-org/alist/v3/drivers/base"
@@ -459,16 +460,32 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 		if method == "" {
 			method = "GET" // 默认 GET
 		}
+		paramValues := neturl.Values{}
 
 		// 将 JSON 字符串 params 转换为 map[string]string
-		paramMap := make(map[string]string)
 		if params != "" && params != "null" {
 			var rawParams map[string]interface{}
 			if err := json.Unmarshal([]byte(params), &rawParams); err != nil {
 				return nil, errors.New("params 解析失败: " + err.Error())
 			}
 			for k, v := range rawParams {
-				paramMap[k] = utils.ConvertToString(v)
+				switch val := v.(type) {
+				case string, float64, bool, int, int64, float32:
+					paramValues.Add(k, utils.ConvertToString(val))
+				case []interface{}:
+					for _, item := range val {
+						paramValues.Add(k, utils.ConvertToString(item))
+					}
+				case []string:
+					for _, item := range val {
+						paramValues.Add(k, item)
+					}
+				case map[string]interface{}:
+					jsonStr, _ := json.Marshal(val)
+					paramValues.Add(k, string(jsonStr))
+				default:
+					// 忽略不支持的类型
+				}
 			}
 		}
 
@@ -483,20 +500,22 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 				"X-Guid":      xc.DeviceID,
 			})
 			r.SetBody([]byte(body))
-			if len(paramMap) > 0 {
-				r.SetQueryParams(paramMap)
+			if len(paramValues) > 0 {
+				r.SetQueryParamsFromValues(paramValues)
 			}
 		}, nil)
 
 		if err != nil {
 			return nil, errors.New("请求错误")
 		}
+
 		var result interface{}
 		err = json.Unmarshal(resp, &result)
 		if err != nil {
 			// 不是 JSON，就直接返回原始字符串
 			return string(resp), nil
 		}
+
 		// 是合法 JSON，返回解析结果
 		return result, nil
 

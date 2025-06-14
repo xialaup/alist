@@ -50,7 +50,13 @@ func ConvertToString(v interface{}) string {
 		return val
 	case float64, bool, int, int64, float32:
 		return fmt.Sprintf("%v", val)
-	case []interface{}, map[string]interface{}:
+	case []interface{}:
+		var parts []string
+		for _, item := range val {
+			parts = append(parts, ConvertToString(item))
+		}
+		return strings.Join(parts, ",")
+	case map[string]interface{}:
 		// 转为 JSON 字符串再作为参数
 		b, _ := json.Marshal(val)
 		return string(b)
