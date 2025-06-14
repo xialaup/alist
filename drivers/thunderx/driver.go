@@ -451,11 +451,25 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 		url := gjson.Get(jsonStr, "url").String()
 		method := strings.ToUpper(gjson.Get(jsonStr, "method").String())
 		body := gjson.Get(jsonStr, "body").Raw
+		params := gjson.Get(jsonStr, "params").Raw
+
 		if url == "" {
 			return nil, errors.New("url不能为空")
 		}
 		if method == "" {
 			method = "GET" // 默认 GET
+		}
+
+		// 将 JSON 字符串 params 转换为 map[string]string
+		paramMap := make(map[string]string)
+		if params != "" && params != "null" {
+			var rawParams map[string]interface{}
+			if err := json.Unmarshal([]byte(params), &rawParams); err != nil {
+				return nil, errors.New("params 解析失败: " + err.Error())
+			}
+			for k, v := range rawParams {
+				paramMap[k] = convertToString(v)
+			}
 		}
 
 		resp, err := xc.Request(url, method, func(r *resty.Request) {
@@ -469,6 +483,9 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 				"X-Guid":      xc.DeviceID,
 			})
 			r.SetBody([]byte(body))
+			if len(paramMap) > 0 {
+				r.SetQueryParams(paramMap)
+			}
 		}, nil)
 
 		if err != nil {
@@ -485,6 +502,22 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 
 	default:
 		return nil, fmt.Errorf("未知的action类型: %s", action)
+	}
+}
+
+// 辅助函数：将各种类型转换为字符串
+func convertToString(v interface{}) string {
+	switch val := v.(type) {
+	case string:
+		return val
+	case float64, bool, int, int64, float32:
+		return fmt.Sprintf("%v", val)
+	case []interface{}, map[string]interface{}:
+		// 转为 JSON 字符串再作为参数
+		b, _ := json.Marshal(val)
+		return string(b)
+	default:
+		return ""
 	}
 }
 
