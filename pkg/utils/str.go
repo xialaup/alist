@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/alist-org/alist/v3/internal/conf"
@@ -39,4 +41,20 @@ func GetNoneEmpty(strArr ...string) string {
 		}
 	}
 	return ""
+}
+
+// 辅助函数：将各种类型转换为字符串
+func ConvertToString(v interface{}) string {
+	switch val := v.(type) {
+	case string:
+		return val
+	case float64, bool, int, int64, float32:
+		return fmt.Sprintf("%v", val)
+	case []interface{}, map[string]interface{}:
+		// 转为 JSON 字符串再作为参数
+		b, _ := json.Marshal(val)
+		return string(b)
+	default:
+		return ""
+	}
 }

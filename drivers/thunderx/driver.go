@@ -468,7 +468,7 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 				return nil, errors.New("params 解析失败: " + err.Error())
 			}
 			for k, v := range rawParams {
-				paramMap[k] = convertToString(v)
+				paramMap[k] = utils.ConvertToString(v)
 			}
 		}
 
@@ -502,22 +502,6 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 
 	default:
 		return nil, fmt.Errorf("未知的action类型: %s", action)
-	}
-}
-
-// 辅助函数：将各种类型转换为字符串
-func convertToString(v interface{}) string {
-	switch val := v.(type) {
-	case string:
-		return val
-	case float64, bool, int, int64, float32:
-		return fmt.Sprintf("%v", val)
-	case []interface{}, map[string]interface{}:
-		// 转为 JSON 字符串再作为参数
-		b, _ := json.Marshal(val)
-		return string(b)
-	default:
-		return ""
 	}
 }
 
