@@ -41,6 +41,40 @@
 
 English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing](./CONTRIBUTING.md) | [CODE_OF_CONDUCT](./CODE_OF_CONDUCT.md)
 
+## 与官方版本区别： 
+- PikPak和迅雷X加入反代选项使用更方便
+- 前台文件夹对比功能，文件夹下显示文件选中数量
+- 提醒功能：文件复制完成或失败会提醒
+- 复制功能：加入覆盖选项，复制文件夹时如果文件已经存在会跳过，后台复制任务列表进行了优化，进行中置顶，显示复制文件大小
+- 存储功能：添加复制存储功能，存储分组及同步修改组内存储功能
+- 离线下载逻辑和官方不一样：具体使用可以参考迅雷X的使用视频
+- 可以添加自定义播放器方便调用其他APP播放
+- 6盘(2dland.cn)、迅雷X实现other接口返回下载的原始链接，其中6盘为webdav的下载直链包含webdav的用户名和密码，如无必要请勿使用。调用地址:/api/fs/other   方法:Post 请求Body:{"path":"/path"}    
+- 关于Other接口，目前迅雷X加入了网络请求的接口，这样可以进行其它的接口请求不需要再重复实现登陆操作，body,params可选。请求示例:
+```
+{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{},"params":{}}}
+```
+上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求.
+<https://alist.nn.ci/>
+
+## Linux安装脚本
+```
+curl -fsSL "https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/linux.sh" | bash -s install
+```
+
+## Serv00
+```
+wget -O alist-freebsd.sh https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/serv00.sh && sh alist-freebsd.sh
+```
+## Android可使用Termux运行 项目地址如下：
+https://github.com/ykxVK8yL5L/termux-packages/releases   
+https://github.com/ykxVK8yL5L/AListFlutter/releases
+
+## Docker 配置文件路径 /opt/alist
+```
+docker run  --name="alist" -p 10021:5244 -v /opt/alist:/opt/alist/data -e ALIST_ADMIN_PASSWORD='admin' ykxvk8yl5l/alist:latest
+```
+
 ## Features
 
 - [x] Multiple storages
@@ -98,39 +132,6 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 
 ## Document
 
-## 与官方版本区别： 
-- PikPak和迅雷X加入反代选项使用更方便
-- 前台文件夹对比功能，文件夹下显示文件选中数量
-- 提醒功能：文件复制完成或失败会提醒
-- 复制功能：加入覆盖选项，复制文件夹时如果文件已经存在会跳过，后台复制任务列表进行了优化，进行中置顶，显示复制文件大小
-- 存储功能：添加复制存储功能，存储分组及同步修改组内存储功能
-- 离线下载逻辑和官方不一样：具体使用可以参考迅雷X的使用视频
-- 可以添加自定义播放器方便调用其他APP播放
-- 6盘(2dland.cn)、迅雷X实现other接口返回下载的原始链接，其中6盘为webdav的下载直链包含webdav的用户名和密码，如无必要请勿使用。调用地址:/api/fs/other   方法:Post 请求Body:{"path":"/path"}    
-- 关于Other接口，目前迅雷X加入了网络请求的接口，这样可以进行其它的接口请求不需要再重复实现登陆操作，请求示例:
-```
-{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{},"params":{}}}
-```
-上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求.
-<https://alist.nn.ci/>
-
-## Linux安装脚本
-```
-curl -fsSL "https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/linux.sh" | bash -s install
-```
-
-## Serv00
-```
-wget -O alist-freebsd.sh https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/serv00.sh && sh alist-freebsd.sh
-```
-## Android可使用Termux运行 项目地址如下：
-https://github.com/ykxVK8yL5L/termux-packages/releases   
-https://github.com/ykxVK8yL5L/AListFlutter/releases
-
-## Docker 配置文件路径 /opt/alist
-```
-docker run  --name="alist" -p 10021:5244 -v /opt/alist:/opt/alist/data -e ALIST_ADMIN_PASSWORD='admin' ykxvk8yl5l/alist:latest
-```
 
 ## Demo
 
