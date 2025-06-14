@@ -109,7 +109,7 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 - 6盘(2dland.cn)、迅雷X实现other接口返回下载的原始链接，其中6盘为webdav的下载直链包含webdav的用户名和密码，如无必要请勿使用。调用地址:/api/fs/other   方法:Post 请求Body:{"path":"/path"}    
 - 关于Other接口，目前迅雷X加入了网络请求的接口，这样可以进行其它的接口请求不需要再重复实现登陆操作，请求示例:
 ```
-{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get"}}
+{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{},"params":{}}}
 ```
 上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求.
 <https://alist.nn.ci/>
@@ -124,7 +124,7 @@ curl -fsSL "https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/linux.sh" | 
 wget -O alist-freebsd.sh https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/serv00.sh && sh alist-freebsd.sh
 ```
 ## Android可使用Termux运行 项目地址如下：
-https://github.com/ykxVK8yL5L/termux-packages/releases
+https://github.com/ykxVK8yL5L/termux-packages/releases   
 https://github.com/ykxVK8yL5L/AListFlutter/releases
 
 ## Docker 配置文件路径 /opt/alist
