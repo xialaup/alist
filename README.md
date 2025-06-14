@@ -55,7 +55,6 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 {"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{},"params":{}}}
 ```
 上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求.
-<https://alist.nn.ci/>
 
 ## Linux安装脚本
 ```
@@ -70,7 +69,7 @@ wget -O alist-freebsd.sh https://raw.githubusercontent.com/ykxVK8yL5L/alist/main
 https://github.com/ykxVK8yL5L/termux-packages/releases   
 https://github.com/ykxVK8yL5L/AListFlutter/releases
 
-## Docker 配置文件路径 /opt/alist
+## Docker 配置文件路径 /opt/alist 访问端口:10021 
 ```
 docker run  --name="alist" -p 10021:5244 -v /opt/alist:/opt/alist/data -e ALIST_ADMIN_PASSWORD='admin' ykxvk8yl5l/alist:latest
 ```
