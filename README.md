@@ -52,9 +52,9 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 - 6盘(2dland.cn)、迅雷X实现other接口返回下载的原始链接，其中6盘为webdav的下载直链包含webdav的用户名和密码，如无必要请勿使用。调用地址:/api/fs/other   方法:Post 请求Body:{"path":"/path"}    
 - 关于Other接口，目前迅雷X加入了网络请求的接口，这样可以进行其它的接口请求不需要再重复实现登陆操作，body,params可选。请求示例:
 ```
-{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{},"params":{}}}
+{"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{"id":"__FILEID__","name":"__FILENAME__","PATH":"__FILEPATH__"},"params":{}}}
 ```
-上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求.演示视频:<https://youtu.be/T8RpBbeoPqw>
+上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求,__FILEID__、__FILENAME__、__FILEPAT__分别对应文件的id,name和path信息。演示视频:<https://youtu.be/T8RpBbeoPqw>
 
 ## Linux安装脚本
 ```
