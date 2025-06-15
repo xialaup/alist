@@ -38,6 +38,7 @@ type Link struct {
 }
 
 type OtherArgs struct {
+	Path   string
 	Obj    Obj
 	Method string
 	Data   interface{}

@@ -281,6 +281,7 @@ func Other(ctx context.Context, storage driver.Driver, args model.FsOtherArgs) (
 	}
 	if o, ok := storage.(driver.Other); ok {
 		return o.Other(ctx, model.OtherArgs{
+			Path:   args.Path,
 			Obj:    obj,
 			Method: args.Method,
 			Data:   args.Data,

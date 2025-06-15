@@ -438,6 +438,9 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 	}
 
 	jsonStr := string(dataBytes)
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILEID__", args.Obj.GetID())
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILENAME__", args.Obj.GetName())
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILEPATH__", args.Path)
 
 	// ✅ Step 1: 判断是否有 action 字段
 	actionResult := gjson.Get(jsonStr, "action")
@@ -446,6 +449,7 @@ func (xc *XunLeiXCommon) Other(ctx context.Context, args model.OtherArgs) (inter
 	}
 
 	action := actionResult.String()
+
 	switch action {
 	case "request":
 		// 构造请求数据，假设传入的 json 里有 url, method, body 字段
