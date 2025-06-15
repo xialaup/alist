@@ -3,11 +3,13 @@ package halalcloud
 import (
 	"context"
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alist-org/alist/v3/drivers/base"
@@ -21,12 +23,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/city404/v6-public-rpc-proto/go/v6/common"
+	pubFileShare "github.com/city404/v6-public-rpc-proto/go/v6/fileshare"
 	pubUserOffline "github.com/city404/v6-public-rpc-proto/go/v6/offline"
 	pbPublicUser "github.com/city404/v6-public-rpc-proto/go/v6/user"
 	pubUserFile "github.com/city404/v6-public-rpc-proto/go/v6/userfile"
 	pbDavConfig "github.com/city404/v6-public-rpc-proto/go/v6/webdavconfig"
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/readers"
+	"github.com/tidwall/gjson"
 	"github.com/zzzhr1990/go-common-entity/userfile"
 )
 
@@ -437,36 +441,238 @@ func (d *HalalCloud) Offline(ctx context.Context, args model.OtherArgs) (interfa
 
 func (d *HalalCloud) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
 
-	if args.Obj.IsDir() {
-		return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
+	if args.Data == nil {
+		if args.Obj.IsDir() {
+			return "无法获取文件夹的直链", errors.New("无法获取文件夹的直链")
+		}
+
+		if len(d.WebDavUserName) <= 0 {
+			return "无法获取WebDav用户信息", errors.New("无法获取WebDav用户信息")
+		}
+
+		// result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
+		// if err != nil {
+		// 	return "无法获取Webdav信息", err
+		// }
+
+		// 构造基础URL
+		baseURL := "https://dav.2dland.cn"
+		// 解析基础URL
+		parsedURL, err := url.Parse(baseURL)
+		if err != nil {
+			return "无法解析下载网址", err
+		}
+
+		// 设置用户名和密码
+		username := d.WebDavUserName
+		password := d.WebDavPassWord
+
+		// 设置用户名和密码
+		parsedURL.User = url.UserPassword(username, password)
+		linkurl := parsedURL.String() + args.Obj.GetPath()
+
+		return linkurl, nil
 	}
 
-	if len(d.WebDavUserName) <= 0 {
-		return "无法获取WebDav用户信息", errors.New("无法获取WebDav用户信息")
-	}
-
-	// result, err := pbDavConfig.NewPubDavConfigClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &pbDavConfig.DavConfig{})
-	// if err != nil {
-	// 	return "无法获取Webdav信息", err
-	// }
-
-	// 构造基础URL
-	baseURL := "https://dav.2dland.cn"
-	// 解析基础URL
-	parsedURL, err := url.Parse(baseURL)
+	dataBytes, err := json.Marshal(args.Data)
 	if err != nil {
-		return "无法解析下载网址", err
+		return nil, fmt.Errorf("解析data数据出错: %w ,注意data为json格式", err)
+	}
+	if string(dataBytes) == "null" || string(dataBytes) == "{}" || string(dataBytes) == "\"\"" {
+		return nil, errors.New("data不能为空")
 	}
 
-	// 设置用户名和密码
-	username := d.WebDavUserName
-	password := d.WebDavPassWord
+	jsonStr := string(dataBytes)
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILEID__", args.Obj.GetID())
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILENAME__", args.Obj.GetName())
+	jsonStr = strings.ReplaceAll(jsonStr, "__FILEPATH__", args.Path)
 
-	// 设置用户名和密码
-	parsedURL.User = url.UserPassword(username, password)
-	linkurl := parsedURL.String() + args.Obj.GetPath()
+	// ✅ Step 1: 判断是否有 action 字段
+	actionResult := gjson.Get(jsonStr, "action")
+	if !actionResult.Exists() {
+		return nil, errors.New("请传递action字段")
+	}
 
-	return linkurl, nil
+	action := strings.ToUpper(actionResult.String())
+	// 构造请求数据，由于2dland采用的不是http请求，因此不需要传递url，只需要传递method和body即可
+	method := strings.ToUpper(gjson.Get(jsonStr, "method").String())
+	body := gjson.Get(jsonStr, "body").Raw
+
+	switch action {
+	case "SHARE":
+		if method == "" {
+			method = "LIST" // 默认 GET
+		}
+		switch method {
+		case "LIST":
+			var shareRequestBody pubFileShare.FileShareListRequest
+			err = json.Unmarshal([]byte(body), &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			shares, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).List(ctx, &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return shares, nil
+
+		case "CREATE":
+			var createShareRequestBody pubFileShare.FileShare
+			err = json.Unmarshal([]byte(body), &createShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			share, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Create(ctx, &createShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("创建分享列表失败: %s", err.Error())
+			}
+			return share, nil
+
+		case "GET":
+			var getShareRequestBody pubFileShare.FileShare
+			err = json.Unmarshal([]byte(body), &getShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			share, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Get(ctx, &getShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return share, nil
+
+		case "LIKE":
+			var shareRequestBody pubFileShare.FileShare
+			err = json.Unmarshal([]byte(body), &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			share, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Like(ctx, &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return share, nil
+
+		case "DISLIKE":
+			var shareRequestBody pubFileShare.FileShare
+			err = json.Unmarshal([]byte(body), &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			share, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Dislike(ctx, &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return share, nil
+
+		case "SAVE":
+			var shareRequestBody pubFileShare.FileShare
+			err = json.Unmarshal([]byte(body), &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			share, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Save(ctx, &shareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return share, nil
+
+		case "DELETE":
+			var deleteShareRequestBody pubFileShare.FileShareDeleteRequest
+			err = json.Unmarshal([]byte(body), &deleteShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			shares, err := pubFileShare.NewPubFileShareClient(d.HalalCommon.serv.GetGrpcConnection()).Delete(ctx, &deleteShareRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return shares, nil
+
+		default:
+			return nil, fmt.Errorf("未知的method类型: %s", method)
+		}
+	case "OFFLINE":
+		if method == "" {
+			method = "LIST" // 默认 GET
+		}
+		switch method {
+		case "LIST":
+			var offlineRequestBody pubUserOffline.OfflineTaskListRequest
+			err = json.Unmarshal([]byte(body), &offlineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			offlines, err := pubUserOffline.NewPubOfflineTaskClient(d.HalalCommon.serv.GetGrpcConnection()).List(ctx, &offlineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return offlines, nil
+
+		case "PARSE":
+			var parseOfflineRequestBody pubUserOffline.TaskParseRequest
+			err = json.Unmarshal([]byte(body), &parseOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			offline, err := pubUserOffline.NewPubOfflineTaskClient(d.HalalCommon.serv.GetGrpcConnection()).Parse(ctx, &parseOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return offline, nil
+
+		case "ADD":
+			var addOfflineRequestBody pubUserOffline.UserTask
+			err = json.Unmarshal([]byte(body), &addOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			offline, err := pubUserOffline.NewPubOfflineTaskClient(d.HalalCommon.serv.GetGrpcConnection()).Add(ctx, &addOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return offline, nil
+
+		case "DELETE":
+			var deleteOfflineRequestBody pubUserOffline.OfflineTaskDeleteRequest
+			err = json.Unmarshal([]byte(body), &deleteOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("body信息传递错误: %s", err.Error())
+			}
+			offlines, err := pubUserOffline.NewPubOfflineTaskClient(d.HalalCommon.serv.GetGrpcConnection()).Delete(ctx, &deleteOfflineRequestBody)
+			if err != nil {
+				// 不是 JSON，就直接返回原始字符串
+				return nil, fmt.Errorf("获取分享列表失败: %s", err.Error())
+			}
+			return offlines, nil
+
+		default:
+			return nil, fmt.Errorf("未知的method类型: %s", method)
+		}
+	default:
+		return nil, fmt.Errorf("未知的action类型: %s", action)
+	}
+
 }
 
 func (d *HalalCloud) put(ctx context.Context, dstDir model.Obj, fileStream model.FileStreamer, up driver.UpdateProgress) (model.Obj, error) {
