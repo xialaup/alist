@@ -54,7 +54,7 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 ```
 {"path":"/xunlei","password":"","data":{"action":"request","url":"https://api-pan.xunleix.com/drive/v1/tasks","method":"get","body":{"id":"__FILEID__","name":"__FILENAME__","PATH":"__FILEPATH__"},"params":{}}}
 ```
-上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求,__FILEID__、__FILENAME__、__FILEPAT__分别对应文件的id,name和path信息。演示视频:<https://youtu.be/T8RpBbeoPqw>
+上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求,__FILEID__、__FILENAME__、__FILEPATH__ 分别对应文件的id,name和path信息。演示视频:<https://youtu.be/T8RpBbeoPqw>
 
 <details>
 <summary>Other接口请求说明：</summary>
@@ -120,7 +120,7 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
   "path": "/2dland",
   "data": {
     "action": "share",
-    "method": "list",
+    "method": "save",
     "body": {
         "identity":"分享ID"
     }
@@ -175,7 +175,7 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
   "path": "/2dland",
   "data": {
     "action": "offline",
-    "method": "delete",
+    "method": "list",
     "body": {
         "token": "",
         "limit":10
