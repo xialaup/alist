@@ -62,6 +62,13 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 <blockquote>
 <details>
 <summary>6盘Other接口请求说明：</summary>
+  如需使用分享功能需要修改appid和secret如下：
+  
+  ```
+	AppID      = "devDebugger/1.0"
+	AppVersion = "1.0.0"
+	AppSecret  = "Nkx3Y2xvZ2luLmNu"
+  ```
   由于6盘不是采用http请求因此不能像迅雷X那样发送请求，固定请求格式如下:
 
 - 获取分享列表请求:
