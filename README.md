@@ -59,7 +59,8 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 <details>
 <summary>Other接口请求说明：</summary>
 
-<details style="margin-left: 20px;">
+<blockquote>
+<details>
 <summary>6盘Other接口请求说明：</summary>
   由于6盘不是采用http请求因此不能像迅雷X那样发送请求，固定请求格式如下:
 
@@ -190,6 +191,7 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 }
 ```
 </details>
+</blockquote>
 </details>
 
 ## Linux安装脚本
