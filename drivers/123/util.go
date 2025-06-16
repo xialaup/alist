@@ -200,7 +200,7 @@ func (d *Pan123) request(url string, method string, callback base.ReqCallback, r
 		"origin":        "https://www.123pan.com",
 		"referer":       "https://www.123pan.com/",
 		"authorization": "Bearer " + d.AccessToken,
-		"user-agent":    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) alist-client",
+		"user-agent":    d.UserAgent,
 		"platform":      "web",
 		"app-version":   "3",
 		//"user-agent":    base.UserAgent,
