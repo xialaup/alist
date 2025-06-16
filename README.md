@@ -56,6 +56,142 @@ English | [中文](./README_cn.md)| [日本語](./README_ja.md) | [Contributing]
 ```
 上面的代码进行了一次Alist之外的请求来获取下载任务列表。可通过url,method,body来构造自定义的请求,__FILEID__、__FILENAME__、__FILEPAT__分别对应文件的id,name和path信息。演示视频:<https://youtu.be/T8RpBbeoPqw>
 
+<details>
+<summary>Other接口请求说明：</summary>
+
+<details style="margin-left: 20px;">
+<summary>6盘Other接口请求说明：</summary>
+  由于6盘不是采用http请求因此不能像迅雷X那样发送请求，固定请求格式如下:
+
+- 获取分享列表请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "share",
+    "method": "list",
+    "body": {
+        "token": "",
+        "limit":10
+    }
+  }
+}
+```
+
+- 创建分享请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "share",
+    "method": "create",
+    "body": {
+        "path_list":["路径""],
+        "lifetime":-1
+    }
+  }
+}
+```
+
+- 获取分享信息请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "share",
+    "method": "get",
+    "body": {
+        "identity":"分享ID"
+    }
+  }
+}
+```
+- 保存分享请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "share",
+    "method": "list",
+    "body": {
+        "identity":"分享ID"
+    }
+  }
+}
+```
+- 删除分享请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "share",
+    "method": "delete",
+    "body": {
+        "identity":["分享ID"]
+    }
+  }
+}
+```
+
+- 解析离线请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "offline",
+    "method": "parse",
+    "body": {
+        "url":"磁力链接",
+    }
+  }
+}
+```
+
+- 添加离线请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "offline",
+    "method": "add",
+    "body": {
+        "url":"磁力链接",
+        "save_path":"/"
+    }
+  }
+}
+```
+获取离线列表:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "offline",
+    "method": "delete",
+    "body": {
+        "token": "",
+        "limit":10
+    }
+  }
+}
+```
+
+- 删除离线请求:
+```
+{
+  "path": "/2dland",
+  "data": {
+    "action": "offline",
+    "method": "delete",
+    "body": {
+        "identity":["离线ID"]
+    }
+  }
+}
+```
+</details>
+</details>
+
 ## Linux安装脚本
 ```
 curl -fsSL "https://raw.githubusercontent.com/ykxVK8yL5L/alist/main/linux.sh" | bash -s install
