@@ -3,12 +3,15 @@ package handles
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"image/png"
 	"time"
 
 	"github.com/Xhofe/go-cache"
+	"github.com/alist-org/alist/v3/internal/conf"
 	"github.com/alist-org/alist/v3/internal/model"
 	"github.com/alist-org/alist/v3/internal/op"
+	"github.com/alist-org/alist/v3/internal/setting"
 	"github.com/alist-org/alist/v3/server/common"
 	"github.com/gin-gonic/gin"
 	"github.com/pquerna/otp/totp"
@@ -61,12 +64,18 @@ func loginHash(c *gin.Context, req *LoginReq) {
 	if err != nil {
 		common.ErrorResp(c, err, 400)
 		loginCache.Set(ip, count+1)
+		if setting.GetBool(conf.NotifyEnabled) && setting.GetBool(conf.NotifyOnCopySucceeded) {
+			go op.Notify(fmt.Sprintf("%s登录Alist失败:", ip), err.Error())
+		}
 		return
 	}
 	// validate password hash
 	if err := user.ValidatePwdStaticHash(req.Password); err != nil {
 		common.ErrorResp(c, err, 400)
 		loginCache.Set(ip, count+1)
+		if setting.GetBool(conf.NotifyEnabled) && setting.GetBool(conf.NotifyOnCopySucceeded) {
+			go op.Notify(fmt.Sprintf("%s登录Alist失败:", ip), err.Error())
+		}
 		return
 	}
 	// check 2FA
@@ -74,6 +83,9 @@ func loginHash(c *gin.Context, req *LoginReq) {
 		if !totp.Validate(req.OtpCode, user.OtpSecret) {
 			common.ErrorStrResp(c, "Invalid 2FA code", 402)
 			loginCache.Set(ip, count+1)
+			if setting.GetBool(conf.NotifyEnabled) && setting.GetBool(conf.NotifyOnCopySucceeded) {
+				go op.Notify(fmt.Sprintf("%s登录Alist失败:", ip), "Invalid 2FA code")
+			}
 			return
 		}
 	}
@@ -84,6 +96,9 @@ func loginHash(c *gin.Context, req *LoginReq) {
 		return
 	}
 	common.SuccessResp(c, gin.H{"token": token})
+	if setting.GetBool(conf.NotifyEnabled) && setting.GetBool(conf.NotifyOnCopySucceeded) {
+		go op.Notify("Alist登录成功", fmt.Sprintf("登录IP:%s", ip))
+	}
 	loginCache.Del(ip)
 }
 

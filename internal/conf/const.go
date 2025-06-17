@@ -78,6 +78,7 @@ const (
 	NotifyEnabled             = "notify_enabled"
 	NotifyPlatform            = "notify_platform"
 	NotifyValue               = "notify_value"
+	NotifyOnLogin             = "notify_on_login"
 	NotifyOnCopySucceeded     = "notify_on_copy_succeeded"
 	NotifyOnCopyFailed        = "notify_on_copy_failed"
 	NotifyOnDownloadSucceeded = "notify_on_download_succeeded"
