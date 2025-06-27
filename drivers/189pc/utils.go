@@ -322,7 +322,7 @@ func (y *Cloud189PC) login() (err error) {
 	_, err = y.client.R().
 		SetResult(&tokenInfo).SetError(&erron).
 		SetQueryParams(clientSuffix()).
-		SetQueryParam("redirectURL", url.QueryEscape(loginresp.ToUrl)).
+		SetQueryParam("redirectURL", loginresp.ToUrl).
 		Post(API_URL + "/getSessionForPC.action")
 	if err != nil {
 		return
@@ -504,7 +504,6 @@ func (y *Cloud189PC) StreamUpload(ctx context.Context, dstDir model.Obj, file mo
 		retry.Attempts(3),
 		retry.Delay(time.Second),
 		retry.DelayType(retry.BackOffDelay))
-	threadG.SetLimit(3)
 
 	count := int(size / sliceSize)
 	lastPartSize := size % sliceSize
