@@ -540,10 +540,16 @@ func (xc *XunLeiXCommon) Copy(ctx context.Context, srcObj, dstDir model.Obj) err
 }
 
 func (xc *XunLeiXCommon) Remove(ctx context.Context, obj model.Obj) error {
-	_, err := xc.Request(FILE_API_URL+"/{fileID}/trash", http.MethodPatch, func(r *resty.Request) {
+	// _, err := xc.Request(FILE_API_URL+"/{fileID}/trash", http.MethodPatch, func(r *resty.Request) {
+	// 	r.SetContext(ctx)
+	// 	r.SetPathParam("fileID", obj.GetID())
+	// 	r.SetBody("{}")
+	// }, nil)
+	_, err := xc.Request(FILE_API_URL+":batchDelete", http.MethodPost, func(r *resty.Request) {
 		r.SetContext(ctx)
-		r.SetPathParam("fileID", obj.GetID())
-		r.SetBody("{}")
+		r.SetBody(&base.Json{
+			"ids": []string{obj.GetID()},
+		})
 	}, nil)
 	return err
 }
