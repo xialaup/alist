@@ -6,10 +6,11 @@ toolchain go1.23.3
 
 require (
 	github.com/Mikubill/gofakes3 v0.0.3-0.20230622102024-284c0f988700
+	github.com/OpenListTeam/go-cache v0.1.0
+	github.com/OpenListTeam/rateg v0.1.0
+	github.com/OpenListTeam/times v0.1.0
+	github.com/OpenListTeam/wopan-sdk-go v0.1.5
 	github.com/SheltonZhu/115driver v1.0.32
-	github.com/Xhofe/go-cache v0.0.0-20220723083548-714439c8af9a
-	github.com/Xhofe/rateg v0.0.0-20230728072201-251a4e1adad4
-	github.com/alist-org/times v0.0.0-20240721124654-efa0c7d3ad92
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/aws/aws-sdk-go v1.50.24
@@ -56,11 +57,10 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/t3rm1n4l/go-mega v0.0.0-20240219080617-d494b6a8ace7
+	github.com/tidwall/gjson v1.18.0
 	github.com/u2takey/ffmpeg-go v0.5.0
 	github.com/upyun/go-sdk/v3 v3.0.4
 	github.com/winfsp/cgofuse v1.5.1-0.20230130140708-f87f5db493b5
-	github.com/xhofe/gsync v0.0.0-20230917091818-2111ceb38a25
-	github.com/xhofe/wopan-sdk-go v0.1.3
 	github.com/zzzhr1990/go-common-entity v0.0.0-20221216044934-fd1c571e3a22
 	golang.org/x/crypto v0.28.0
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
@@ -78,14 +78,16 @@ require (
 )
 
 require (
-	github.com/tidwall/gjson v1.18.0 // indirect
+	cloud.google.com/go/compute/metadata v0.7.0 // indirect
+	github.com/cloudwego/iasm v0.2.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
+	github.com/OpenListTeam/gsync v0.1.0
 	github.com/RoaringBitmap/roaring v1.2.3 // indirect
 	github.com/abbot/go-http-auth v0.4.0 // indirect
 	github.com/aead/ecdh v0.2.0 // indirect
@@ -203,7 +205,7 @@ require (
 	github.com/shabbyrobe/gocovmerge v0.0.0-20190829150210-3e036491d500 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.7 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
@@ -219,7 +221,7 @@ require (
 	go4.org v0.0.0-20230225012048-214862532bf5
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/api v0.134.0 // indirect

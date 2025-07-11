@@ -2,8 +2,9 @@ package lark
 
 import (
 	"context"
-	"github.com/Xhofe/go-cache"
 	"time"
+
+	"github.com/OpenListTeam/go-cache"
 )
 
 type TokenCache struct {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/jaevor/go-nanoid"
 
-	"github.com/xhofe/gsync"
+	"github.com/OpenListTeam/gsync"
 )
 
 // Manager is the manager of all tasks
