@@ -5,7 +5,7 @@ echo '安装依赖'
 pkg instal termux-services tsu vim -y
 apt install -y wget dpkg
 echo '安装Alist'
-wget https://ghfast.top/https://github.com/ykxVK8yL5L/termux-packages/releases/latest/download/alist_1_aarch64.deb -O alist.deb
+wget https://ghfast.top/https://github.com/ykxVK8yL5L/termux-packages/releases/v1/download/alist_1_aarch64.deb -O alist.deb
 dpkg -i alist.deb
 alist admin set admin
 echo '创建开机启动服务'
