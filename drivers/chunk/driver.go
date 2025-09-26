@@ -269,7 +269,7 @@ func (d *Chunk) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (
 	baseURL := common.GetApiUrl(common.GetHttpReq(ctx))
 	var fileAddrs []string
 	for idx, _ := range chunkFile.chunkSizes {
-		fileRemotePath := stdpath.Join(d.RemotePath, remoteActualPath, d.getPartName(idx))
+		fileRemotePath := stdpath.Join(d.RemotePath, file.GetPath(), d.getPartName(idx))
 		fileAddrs = append(fileAddrs, fileRemotePath)
 	}
 	size := chunkFile.GetSize()
