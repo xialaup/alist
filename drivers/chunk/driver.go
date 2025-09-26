@@ -19,7 +19,6 @@ import (
 	"github.com/alist-org/alist/v3/pkg/http_range"
 	"github.com/alist-org/alist/v3/pkg/utils"
 	"github.com/alist-org/alist/v3/server/common"
-	"github.com/rclone/rclone/lib/readers"
 )
 
 type Chunk struct {
@@ -261,36 +260,92 @@ func (d *Chunk) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (
 	if !ok {
 		return nil, errors.New("not a chunk file: " + remoteActualPath)
 	}
-	needProxy := false
-	if remoteStorage.Config().MustProxy() {
-		needProxy = true
-	}
-
-	baseURL := common.GetApiUrl(common.GetHttpReq(ctx))
-	var fileAddrs []string
-	for idx, _ := range chunkFile.chunkSizes {
-		fileRemotePath := stdpath.Join(d.RemotePath, file.GetPath(), d.getPartName(idx))
-		fileAddrs = append(fileAddrs, fileRemotePath)
-	}
-	size := chunkFile.GetSize()
-	chunks := getChunkSizes(d.PartSize, chunkFile.chunkSizes)
+	fileSize := chunkFile.GetSize()
 	var finalClosers utils.Closers
 	resultRangeReader := func(ctx context.Context, httpRange http_range.Range) (io.ReadCloser, error) {
+		start := httpRange.Start
 		length := httpRange.Length
-		if httpRange.Length >= 0 && httpRange.Start+httpRange.Length >= size {
-			length = -1
+		if length < 0 || start+length > fileSize {
+			length = fileSize - start
 		}
-		oo := &openObject{
-			ctx:       ctx,
-			baseURL:   baseURL,
-			d:         fileAddrs,
-			chunks:    &chunks,
-			skip:      httpRange.Start,
-			needProxy: needProxy,
+		if length == 0 {
+			return io.NopCloser(strings.NewReader("")), nil
 		}
-		finalClosers.Add(oo)
+		var (
+			readFrom bool
+		)
+		for idx, chunkSize := range chunkFile.chunkSizes {
+			if readFrom {
+				l, _, _ := op.Link(ctx, remoteStorage, stdpath.Join(remoteActualPath, d.getPartName(idx)), args)
+				rrc := l.RangeReadCloser
+				if len(l.URL) > 0 {
+					rangedRemoteLink := &model.Link{
+						URL:    l.URL,
+						Header: l.Header,
+					}
+					var converted, err = stream.GetRangeReadCloserFromLink(int64(l.PartSize), rangedRemoteLink)
+					if err != nil {
+						return nil, err
+					}
+					rrc = converted
+				}
+				if rrc != nil {
+					//remoteRangeReader, err :=
+					remoteReader, err := rrc.RangeRead(ctx, http_range.Range{Start: start, Length: -1})
+					finalClosers.AddClosers(rrc.GetClosers())
+					if err != nil {
+						return nil, err
+					}
+					return remoteReader, nil
+				}
+				if l.MFile != nil {
+					_, err := l.MFile.Seek(start, io.SeekStart)
+					if err != nil {
+						return nil, err
+					}
+					finalClosers.Add(l.MFile)
+					return io.NopCloser(l.MFile), nil
+				}
+			} else if newStart := start - chunkSize; newStart >= 0 {
+				start = newStart
+			} else {
+				l, _, _ := op.Link(ctx, remoteStorage, stdpath.Join(remoteActualPath, d.getPartName(idx)), args)
+				rrc := l.RangeReadCloser
+				if len(l.URL) > 0 {
 
-		return readers.NewLimitedReadCloser(oo, length), nil
+					rangedRemoteLink := &model.Link{
+						URL:    l.URL,
+						Header: l.Header,
+					}
+					var converted, err = stream.GetRangeReadCloserFromLink(int64(l.PartSize), rangedRemoteLink)
+					if err != nil {
+						return nil, err
+					}
+					rrc = converted
+				}
+				if rrc != nil {
+					//remoteRangeReader, err :=
+					remoteReader, err := rrc.RangeRead(ctx, http_range.Range{Start: start, Length: -1})
+					finalClosers.AddClosers(rrc.GetClosers())
+					if err != nil {
+						return nil, err
+					}
+					return remoteReader, nil
+				}
+				if l.MFile != nil {
+					_, err := l.MFile.Seek(start, io.SeekStart)
+					if err != nil {
+						return nil, err
+					}
+					//remoteClosers.Add(remoteLink.MFile)
+					//keep reuse same MFile and close at last.
+					finalClosers.Add(l.MFile)
+					return io.NopCloser(l.MFile), nil
+				}
+				readFrom = true
+			}
+		}
+		return nil, fmt.Errorf("invalid range: start=%d,length=%d,fileSize=%d", httpRange.Start, httpRange.Length, fileSize)
 	}
 	resultRangeReadCloser := &model.RangeReadCloser{RangeReader: resultRangeReader, Closers: finalClosers}
 	resultLink := &model.Link{

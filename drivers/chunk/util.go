@@ -161,3 +161,52 @@ func getRawFiles(baseURL string, addr string, needProxy bool) ([]byte, error) {
 
 	return body, nil
 }
+
+//方案二driver.go的Link方法：
+// func (d *Chunk) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (*model.Link, error) {
+// 	remoteStorage, remoteActualPath, err := op.GetStorageAndActualPath(d.RemotePath)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	chunkFile, ok := file.(*chunkObject)
+// 	remoteActualPath = stdpath.Join(remoteActualPath, file.GetPath())
+// 	if !ok {
+// 		return nil, errors.New("not a chunk file: " + remoteActualPath)
+// 	}
+// 	needProxy := false
+// 	if remoteStorage.Config().MustProxy() {
+// 		needProxy = true
+// 	}
+
+// 	baseURL := common.GetApiUrl(common.GetHttpReq(ctx))
+// 	var fileAddrs []string
+// 	for idx, _ := range chunkFile.chunkSizes {
+// 		fileRemotePath := stdpath.Join(d.RemotePath, file.GetPath(), d.getPartName(idx))
+// 		fileAddrs = append(fileAddrs, fileRemotePath)
+// 	}
+// 	size := chunkFile.GetSize()
+// 	chunks := getChunkSizes(d.PartSize, chunkFile.chunkSizes)
+// 	var finalClosers utils.Closers
+// 	resultRangeReader := func(ctx context.Context, httpRange http_range.Range) (io.ReadCloser, error) {
+// 		length := httpRange.Length
+// 		if httpRange.Length >= 0 && httpRange.Start+httpRange.Length >= size {
+// 			length = -1
+// 		}
+// 		oo := &openObject{
+// 			ctx:       ctx,
+// 			baseURL:   baseURL,
+// 			d:         fileAddrs,
+// 			chunks:    &chunks,
+// 			skip:      httpRange.Start,
+// 			needProxy: needProxy,
+// 		}
+// 		finalClosers.Add(oo)
+
+// 		return readers.NewLimitedReadCloser(oo, length), nil
+// 	}
+// 	resultRangeReadCloser := &model.RangeReadCloser{RangeReader: resultRangeReader, Closers: finalClosers}
+// 	resultLink := &model.Link{
+// 		RangeReadCloser: resultRangeReadCloser,
+// 	}
+// 	return resultLink, nil
+// }
