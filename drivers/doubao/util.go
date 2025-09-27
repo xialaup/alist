@@ -549,9 +549,7 @@ func (d *Doubao) UploadByMultipart(ctx context.Context, config *UploadConfig, fi
 				size = fileSize - offset
 			}
 
-			limitedReader := io.LimitReader(tempFile, size)
-
-			//limitedReader := driver.NewLimitedUploadStream(ctx, io.NewSectionReader(tempFile, offset, size))
+			limitedReader := driver.NewLimitedUploadStream(ctx, io.NewSectionReader(tempFile, offset, size))
 			// 读取数据到内存
 			data, err := io.ReadAll(limitedReader)
 			if err != nil {

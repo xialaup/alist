@@ -242,6 +242,28 @@ func (d *Doubao) Put(ctx context.Context, dstDir model.Obj, file model.FileStrea
 	return d.UploadByMultipart(ctx, &uploadConfig, file.GetSize(), dstDir, file, up, dataType)
 }
 
+func (d *Doubao) GetArchiveMeta(ctx context.Context, obj model.Obj, args model.ArchiveArgs) (model.ArchiveMeta, error) {
+	// TODO get archive file meta-info, return errs.NotImplement to use an internal archive tool, optional
+	return nil, errs.NotImplement
+}
+
+func (d *Doubao) ListArchive(ctx context.Context, obj model.Obj, args model.ArchiveInnerArgs) ([]model.Obj, error) {
+	// TODO list args.InnerPath in the archive obj, return errs.NotImplement to use an internal archive tool, optional
+	return nil, errs.NotImplement
+}
+
+func (d *Doubao) Extract(ctx context.Context, obj model.Obj, args model.ArchiveInnerArgs) (*model.Link, error) {
+	// TODO return link of file args.InnerPath in the archive obj, return errs.NotImplement to use an internal archive tool, optional
+	return nil, errs.NotImplement
+}
+
+func (d *Doubao) ArchiveDecompress(ctx context.Context, srcObj, dstDir model.Obj, args model.ArchiveDecompressArgs) ([]model.Obj, error) {
+	// TODO extract args.InnerPath path in the archive srcObj to the dstDir location, optional
+	// a folder with the same name as the archive file needs to be created to store the extracted results if args.PutIntoNewDir
+	// return errs.NotImplement to use an internal archive tool
+	return nil, errs.NotImplement
+}
+
 //func (d *Doubao) Other(ctx context.Context, args model.OtherArgs) (interface{}, error) {
 //	return nil, errs.NotSupport
 //}
