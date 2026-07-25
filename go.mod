@@ -81,6 +81,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.7.0 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/halalcloud/golang-sdk-lite v0.0.0-20260114141156-c98fb447a544 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 )
