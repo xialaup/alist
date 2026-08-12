@@ -56,7 +56,7 @@ func (d *Cloud189) Link(ctx context.Context, file model.Obj, args model.LinkArgs
 		resty.RedirectPolicyFunc(func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}))
-	res, err := client.R().SetHeader("User-Agent", base.UserAgent).Get("https:" + resp.FileDownloadUrl)
+	res, err := client.R().SetHeader("Cookie", d.Cookie).SetHeader("User-Agent", base.UserAgent).Get("https:" + resp.FileDownloadUrl)
 	if err != nil {
 		return nil, err
 	}
