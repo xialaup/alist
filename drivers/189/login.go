@@ -43,6 +43,11 @@ type EncryptConf struct {
 }
 
 func (d *Cloud189) newLogin() error {
+	if d.Cookie != "" {
+		d.client.SetHeader("Cookie", d.Cookie)
+		return nil
+	}
+
 	url := "https://cloud.189.cn/api/portal/loginUrl.action?redirectURL=https%3A%2F%2Fcloud.189.cn%2Fmain.action"
 	res, err := d.client.R().Get(url)
 	if err != nil {
